@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+<head>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+
+{% block content %}
+<body>
+    <img src="/static/banner1.png" class="rounded float-start" alt="banner 1" width="300" height="700">
+    <img src="/static/banner2.png" class="rounded float-end" alt="banner 2" width="300" height="700">
+
+    <h1>Let's find your next meal</h1>
+    <form action="/result" method="post">
+        <input type="text" name="ingredients" placeholder="Enter ingredients" required>
+        <button type="submit">Search</button>
+    </form>
+
+    <br>
+
+    <div>
+        <p>Not Sure?</p>
+        <button type="submit">Get Random Recipe</button>
+    </div>
+</body>
+{% endblock %}
