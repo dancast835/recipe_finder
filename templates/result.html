@@ -1,11 +1,21 @@
 {% extends "base.html" %}
 
+<head>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+
 {% block content %}
     <h1>Results</h1>
 
-    <h3>Steak with rice</h3>
-    <img src="/static/steak_rice.jpg" class="rounded float-start" alt="steak with rice" width="300" height="200">
-    <p>Ingredients: steak, rice, soy sauce, garlic, ginger</p>
-    <p>Instructions: Marinate steak in soy sauce, garlic, and ginger. Cook rice according to package instructions. Grill or pan-fry steak to desired doneness. Serve steak over rice.</p>
+<dl>
+    {% for label, url, image in recipes %}
+
+        <dt><p>{{ label }}</p></dt>
+        <dt><a href="{{ url }}" target="_blank">View Recipe</a></dt>
+        <dt><img src="{{ image }}" alt="Recipe Image" width="200">image</dt>
+
+    {% endfor %}
+
+</dl>
 
 {% endblock %}
