@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h1>Random Recipe</h1>
+
+
+    {% for label, url, image in recipes %}
+        <h5 class="card-title">{{ label }}</h5>
+        <a href="{{ url }}">
+            <img src="{{ image }}" alt="Recipe Image">
+        </a>
+        <button type="submit"><a href="/favorites" methods="post">Save to favorites</a></button>
+
+        <br>
+
+    {% endfor %}
+
+{% endblock %}

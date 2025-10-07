@@ -7,15 +7,24 @@
 {% block content %}
     <h1>Results</h1>
 
-<dl>
     {% for label, url, image in recipes %}
+        <h5 class="card-title">{{ label }}</h5>
+        <a href="{{ url }}">
+            <img src="{{ image }}" alt="Recipe Image">
+        </a>
 
-        <dt><p>{{ label }}</p></dt>
-        <dt><a href="{{ url }}" target="_blank">View Recipe</a></dt>
-        <dt><img src="{{ image }}" alt="Recipe Image" width="200">image</dt>
+        <form action="/add_favorites" method="post">
+
+            <!-- Hidden inputs to send recipe data -->
+            <input type="hidden" name="label" value="{{ label }}">
+            <input type="hidden" name="url" value="{{ url }}">
+            <input type="hidden" name="image" value="{{ image }}">
+
+            <button type="submit">Save to favorites</button>
+        </form>
+
+        <br>
 
     {% endfor %}
-
-</dl>
 
 {% endblock %}
