@@ -9,7 +9,16 @@
         <a href="{{ url }}">
             <img src="{{ image }}" alt="Recipe Image">
         </a>
-        <button type="submit"><a href="/favorites" methods="post">Save to favorites</a></button>
+
+        <form action="/add_favorites" method="post">
+
+            <!-- Hidden inputs to send recipe data -->
+            <input type="hidden" name="label" value="{{ label }}">
+            <input type="hidden" name="url" value="{{ url }}">
+            <input type="hidden" name="image" value="{{ image }}">
+
+            <button type="submit">Save to favorites</button>
+        </form>
 
         <br>
 
