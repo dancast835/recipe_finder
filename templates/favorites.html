@@ -2,5 +2,12 @@
 
 {% block content %}
     <h1>Your Favorite Recipes</h1>
+    {% for label, url, image in recipes %}
+        <h5 class="card-title">{{ label }}</h5>
+        <a href="{{ url }}">
+            <img src="{{ image }}" alt="Recipe Image">
+        </a>
+        <br><br>
+    {% endfor %}
 
 {% endblock %}

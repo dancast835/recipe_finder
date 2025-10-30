@@ -3,9 +3,8 @@ import os
 from dotenv import load_dotenv
 from flask import Flask, render_template, request, flash, session
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import String
-from sqlalchemy.orm import DeclarativeBase, mapped_column, Mapped
-
+from sqlalchemy import String, ForeignKey
+from sqlalchemy.orm import DeclarativeBase, mapped_column, Mapped, relationship
 
 #------------------------------------------------- Variables -----------------------------------------------#
 #API Edamam
@@ -21,7 +20,7 @@ header = {
 
 #initialize flask
 app = Flask(__name__)
-app.secret_key = "Cachapaconqueso"
+app.secret_key = 'your_secret_key'
 
 user_verified = False
 
@@ -30,15 +29,17 @@ class Base(DeclarativeBase):
     pass
 
 db = SQLAlchemy(model_class=Base)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///recipes.db'
+
+app.config['SQLALCHEMY_DATABASE_URI'] = "sqlite:///recipes.db"
 db.init_app(app)
 
+#set up for a one-to-many relationship between users and their favorite recipes
 class User(db.Model):
     __tablename__ = "users"
     id: Mapped[int] = mapped_column(primary_key=True)
-    username: Mapped[str] = mapped_column(String(150), unique=True, nullable=False)
+    username: Mapped[str] = mapped_column(String(150), unique=True)
 
-    favorites: Mapped[list["Favorite"]] = db.relationship(back_populates="user")
+    favorite: Mapped[list["Favorite"]] = relationship()
 
 class Favorite(db.Model):
     __tablename__ = "favorites"
@@ -47,41 +48,41 @@ class Favorite(db.Model):
     url: Mapped[str]
     image: Mapped[str]
 
-    user_id: Mapped[int] = mapped_column(db.ForeignKey("users.id"))
-    user: Mapped["User"] = db.relationship(back_populates="favorites")
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
 
 with app.app_context():
     db.create_all()
 
+
 #------------------------------------------------- Routes ------------------------------------------------#
-@app.route('/')
+@app.route("/")
 def home():
     return render_template("index.html")
 
-@app.route('/login', methods=['GET', 'POST'])
+@app.route("/login", methods=["GET", "POST"])
 def login():
-    if request.method == 'POST':
+    if request.method == "POST":
         username = request.form['username']
-        session['username'] = username
         user = User.query.filter_by(username=username).first()
         if user:
             global user_verified
             user_verified = True
+            session['username'] = username
             return render_template("favorites.html")
         else:
             return render_template("login.html")
     return render_template("login.html")
 
-@app.route('/logout', methods=['GET', 'POST'])
+@app.route("/logout", methods=["GET", "POST"])
 def logout():
     session.pop('username', None)
     global user_verified
     user_verified = False
     return render_template("index.html")
 
-@app.route('/signup', methods=['GET', 'POST'])
+@app.route("/signup", methods=["GET", "POST"])
 def signup():
-    if request.method == 'POST':
+    if request.method == "POST":
         new_user = User(
             username=request.form['new user']
         )
@@ -89,34 +90,47 @@ def signup():
         db.session.commit()
         return render_template("login.html")
 
-#TODO: make it to if user is in session the link will take directly to favorites page
-@app.route('/favorites')
+
+@app.route("/favorites")
 def favorites():
-    if 'username' in session:
-        return render_template("favorites.html")
-    elif not user_verified:
+    if 'username' not in session:
         return render_template("login.html")
 
-    return render_template("favorites.html")
+    else:
+        user = User.query.filter_by(username=session['username']).first()
 
+        if user:
+            user_favorites = Favorite.query.filter_by(user_id=user.id)
+            label = [fav.label for fav in user_favorites]
+            url = [fav.url for fav in user_favorites]
+            image = [fav.image for fav in user_favorites]
 
-@app.route('/add_favorites', methods=['GET', 'POST'])
+            recipes = zip(label, url, image)
+            return render_template("favorites.html", recipes=recipes)
+
+@app.route("/add_favorites", methods=["GET", "POST"])
 def add_favorites():
-    if request.method == 'POST':
-        new_favorite = Favorite(
-            label=request.form['label'],
-            url=request.form['url'],
-            image=request.form['image']
-        )
-        db.session.add(new_favorite)
-        db.session.commit()
+    if request.method == "POST":
+        user = User.query.filter_by(username=session['username']).first()
 
-    return "<h1>Favorite Added</h1>"
+        if user:
+            new_favorite = Favorite(
+                label=request.form['label'],
+                url=request.form['url'],
+                image=request.form['image'],
+                user_id=user.id
+            )
+            db.session.add(new_favorite)
+            db.session.commit()
+
+        return "<h1>Favorite Added</h1>"
+    return "<h1>Error Adding Favorite</h1>"
 
 
-@app.route('/result', methods=['GET', 'POST'])
+
+@app.route("/result", methods=["GET", "POST"])
 def result():
-    if request.method == 'POST':
+    if request.method == "POST":
         ingredient = request.form['ingredients']
 
         params = {
@@ -134,16 +148,16 @@ def result():
         response = requests.get(url="https://api.edamam.com/api/recipes/v2", params=params, headers=header)
         data = response.json()
 
-        for recipe in data["hits"][:5]:  # Print first 5 recipes
-            label.append(recipe["recipe"]["label"])
-            image.append(recipe["recipe"]["image"])
-            url.append(recipe["recipe"]["url"])
+        for recipe in data['hits'][:5]:  # Print first 5 recipes
+            label.append(recipe['recipe']['label'])
+            image.append(recipe['recipe']['image'])
+            url.append(recipe['recipe']['url'])
 
         recipes = zip(label, url, image)    #zip function to combine lists into tuples to loop all at the same time in html file
 
         return render_template("result.html", recipes=recipes)
 
-@app.route('/random')
+@app.route("/random")
 def random():
     params = {
         "type": "public",
@@ -161,14 +175,16 @@ def random():
     response = requests.get(url="https://api.edamam.com/api/recipes/v2", params=params, headers=header)
     data = response.json()
 
-    for recipe in data["hits"][:5]:  # Print first 5 recipes
-        label.append(recipe["recipe"]["label"])
-        image.append(recipe["recipe"]["image"])
-        url.append(recipe["recipe"]["url"])
+    for recipe in data['hits'][:5]:  # Print first 5 recipes
+        label.append(recipe['recipe']['label'])
+        image.append(recipe['recipe']['image'])
+        url.append(recipe['recipe']['url'])
 
     recipes = zip(label, url, image)  # zip function to combine lists into tuples to loop all at the same time
 
     return render_template("random.html", recipes=recipes)
+
+
 
 
 
