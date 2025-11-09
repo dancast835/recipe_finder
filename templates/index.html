@@ -10,21 +10,31 @@
 
     <h1>Let's find your next meal</h1>
 
-    <br>
-    <br>
+    <br><br>
 
     <div>
         <form action="/result" method="post">
             <input type="text" name="ingredients" placeholder="Enter ingredients" required>
-            <button type="submit">Search</button>
+            <button type="submit" class="btn btn-warning">Search</button>
         </form>
     </div>
 
     <br>
 
     <div>
-        <p>Not Sure?</p>
-        <button type="submit"><a href="/random">Get Random Recipe</a></button>
+        <h5>Not Sure?</h5>
+        <button type="submit" class="btn btn-warning"><a href="/random">Get Random Recipe</a></button>
     </div>
+
+    <br><br><br><br><br><br>
+
+    <!--the tip box is future idea to put quotes or potentially use a web scrapper to put discounted kitchen products -->
+    <div class="tip-box">
+        <div class="tip-of-the-day">
+            <h3>Cooking tip of the day!</h3>
+            <p>Si le echas mucha sal, va a quedar salado</p>
+        </div>
+    </div>
+
 </body>
 {% endblock %}

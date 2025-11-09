@@ -6,21 +6,22 @@
 {% block content %}
     <h1>Results</h1>
 
+    <div class="results-grid">
     {% for label, url, image in recipes %}
+      <div class="recipe-card">
         <h5 class="card-title">{{ label }}</h5>
-        <a href="{{ url }}"><img src="{{ image }}" alt="Recipe Image"></a>
+        <a href="{{ url }}" target="_blank">
+          <img src="{{ image }}" alt="Recipe Image">
+        </a>
 
         <form action="/add_favorites" method="post">
-            <!-- Hidden inputs to send recipe data -->
-            <input type="hidden" name="label" value="{{ label }}">
-            <input type="hidden" name="url" value="{{ url }}">
-            <input type="hidden" name="image" value="{{ image }}">
-
-            <button type="submit">Save to favorites</button>
+          <input type="hidden" name="label" value="{{ label }}">
+          <input type="hidden" name="url" value="{{ url }}">
+          <input type="hidden" name="image" value="{{ image }}">
+          <button type="submit" class="btn btn-warning">Save to favorites</button>
         </form>
-
-        <br>
-
+      </div>
     {% endfor %}
+    </div>
 
 {% endblock %}
